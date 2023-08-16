@@ -1,0 +1,50 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="{% static 'chat/css/styles.css' %}" type="text/css">
+</head>
+<body>
+
+<div class="chats-chat">
+    <div class="other-chats">
+        <div class="other-chat-search">
+            <div class="message-input-search">
+                <div style="padding: 0 5px 0 5px; width: 90%;"><input id="chat-search-input" placeholder="Search more users..." type="text" size="100"></div>
+                <div style="margin-left: auto;"><button id="chat-search-submit"><img class="send-button" src="{% static 'chat/svg/send.svg' %}"></button></div>
+            </div>
+        </div>
+        <div class="other-chat-chats">
+            {% for chat in chats %}
+            <a href="/chat/{{chat.0.pk}}"><div class="chat-user">
+                <div style="display: flex;">
+                    {% if chat.0.user1.id == request.user.id %}
+                        <h1>{{chat.0.user2}}</h1>
+                        <div style="display: flex; margin-inline-start: auto;"><h3 title="{{chat.1.time_create}}" class="content-chats">{{chat.1.time_create|date:"G:i"}}</h3></div>
+                    {%else%}
+                        <h1>{{chat.0.user1}}</h1>
+                        <div style="display: flex; margin-inline-start: auto;"><h3 title="{{chat.1.time_create}}" class="content-chats">{{chat.1.time_create|date:"G:i"}}</h3></div>
+                    {% endif %}
+                </div>
+                <h3 class="content-chats">{{chat.1.content}}</h3>
+            </div></a>
+            <hr style="width: 90%; border: 1px solid #535363">
+            {% endfor %}
+        </div>
+        <div class="other-chat-profile">
+            <div>
+                <h4 style="color: #ceced8;">Your profile</h4>
+                <h3>{{request.user.username}}</h3>
+            </div>
+            <a href='/logout' class="signout-button">Sign out</a>
+        </div>
+    </div>
+
+{% block content %}
+{% endblock %}
+
+</body>
+</html>

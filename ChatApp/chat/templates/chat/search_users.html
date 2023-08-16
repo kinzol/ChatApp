@@ -1,0 +1,58 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="{% static 'chat/css/styles.css' %}" type="text/css">
+</head>
+<body>
+
+<div class="chats-chat">
+    <div class="other-chats">
+        <div class="other-chat-search">
+            <div class="message-input-search">
+                <div style="padding: 0 5px 0 5px; width: 90%;"><input id="chat-search-input" placeholder="Search more users..." type="text" size="100"></div>
+                <div style="margin-left: auto;"><button id="chat-search-submit"><img class="send-button" src="{% static 'chat/svg/send.svg' %}"></button></div>
+            </div>
+        </div>
+        <div class="other-chat-chats">
+            <a href="{% url 'home' %}"><div class="return-button">Return to main page</div></a>
+            {% if search_result|length > 0 %}
+            {% for i in search_result %}
+            <a href="/newchat/{{i.id}}"><div class="search-result-content">
+                <div>{{i.username}}</div>
+            </div></a>
+            <hr style="width: 90%; border: 1px solid #535363">
+            {% endfor %}
+            {% else %}
+            <h2 style="text-align: center; color: #fff;">Results not found</h2>
+            {% endif %}
+        </div>
+        <div class="other-chat-profile">
+            <div>
+                <h4 style="color: #ceced8;">Your profile</h4>
+                <h3>{{request.user.username}}</h3>
+            </div>
+            <a href='/logout' class="signout-button">Sign out</a>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('#chat-search-input').focus();
+        document.querySelector('#chat-search-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#chat-search-submit').click();
+            }
+        };
+    
+        document.querySelector('#chat-search-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-search-input');
+            const message = messageInputDom.value;
+            window.location.href = decodeURIComponent(`/search/${message}`);
+        };
+    
+    </script>
+</body>
+</html>

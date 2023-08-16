@@ -1,0 +1,24 @@
+{% extends 'chat/base.html' %}
+
+{% block content %}
+<div class="chat"></div>
+
+<script>
+    document.querySelector('#chat-search-input').focus();
+    document.querySelector('#chat-search-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {  // enter, return
+            document.querySelector('#chat-search-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-search-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-search-input');
+        const message = messageInputDom.value;
+        window.location.href = decodeURIComponent(`/search/${message}`);
+    };
+
+</script>
+
+{% endblock %}
+
+

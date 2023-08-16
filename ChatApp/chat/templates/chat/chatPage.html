@@ -1,0 +1,134 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="chat">
+        <div class="user-info">
+            <h1>{{mate_user}}</h1>
+        </div>
+        <div id="chat">
+            {% for message in messages %}
+                {% if message.user.id == request.user.id %}
+                <div class="my-message">
+                    <div style="display:flex">
+                        <!-- <div class="message-name">{{message.user}}</div> -->
+                        <div class="message-content">{{message.content}}</div>
+                        <div class="message-time" title="{{message.time_create}}">{{message.time_create|date:"G:i"}}</div>
+                    </div>
+                </div>
+                {% else %}
+                    <div class="mate-message">
+                        <div style="display:flex">
+                        <!-- <div class="message-name">{{message.user}}</div> -->
+                            <div class="message-content">{{message.content}}</div>
+                            <div class="message-time" title="{{message.time_create}}">{{message.time_create|date:"G:i"}}</div>
+                        </div>
+                    </div>
+                {% endif %}    
+            {% endfor %}
+        </div>
+        <div class="message-input">
+            <div style="padding: 0 5px 0 5px; width: 90%;"><input id="chat-message-input" placeholder="Type a message..." type="text" size="100"><br></div>
+            <div style="margin-left: auto;"><button id="chat-message-submit"><img class="send-button" src="{% static 'chat/svg/send.svg' %}"></button></div>
+        </div>
+    </div>
+</div>
+    {{ room_name|json_script:"room-name" }}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        const scrollContainer = document.getElementById("chat");
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        });
+
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+
+
+            var mateMessageDiv = document.createElement("div");
+            if ('{{request.user.username}}' == data.username) {
+                mateMessageDiv.className = "my-message";
+            } else {
+                mateMessageDiv.className = "mate-message";
+            }
+
+            const innerDiv = document.createElement("div");
+            innerDiv.style.display = "flex";
+
+
+            var messagetimeDiv = document.createElement("div");
+            messagetimeDiv.className = "message-time";
+            messagetimeDiv.textContent = data.time;
+
+            var contentDiv = document.createElement("div");
+            contentDiv.className = "message-content";
+            contentDiv.textContent = data.message;
+
+            innerDiv.appendChild(contentDiv);
+            innerDiv.appendChild(messagetimeDiv);
+            mateMessageDiv.appendChild(innerDiv);
+
+            var chatDiv = document.getElementById("chat");
+
+            chatDiv.appendChild(mateMessageDiv);
+
+
+
+            if ('{{request.user.username}}' != data.username) {
+                var myAudio = new Audio('{% static "chat\sounds\get_message.mp3" %}');
+                myAudio.play();
+            }
+
+            const scrollContainer = document.getElementById("chat");
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            if (message != "") {
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'username': "{{request.user.username}}"
+                }));
+                messageInputDom.value = '';
+                var myAudio = new Audio('{% static "chat\sounds\send_message.mp3" %}');
+                myAudio.play();
+            }
+        };
+
+        document.querySelector('#chat-search-input').focus();
+        document.querySelector('#chat-search-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#chat-search-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-search-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-search-input');
+            const message = messageInputDom.value;
+            window.location.href = decodeURIComponent(`/search/${message}`);
+        };
+
+    </script>
+{% endblock %}

@@ -1,0 +1,76 @@
+body {
+    font-family: system-ui, sans-serif;
+    background-color: #c7c7c7;
+}
+
+h1, h2, h3, h4{
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.login-container{
+    background-color: #d6d5d5;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 5px;
+    padding: 100px;
+    color: #2b2b2b;
+    border: 2px solid #ffffff;
+    display: grid;
+}
+
+.auth-input {
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 20px;
+}
+
+.header {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.header-second {
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 400;
+}
+
+button {
+    background-color: #275bec;
+    border: none;
+    color: #fff;
+    font-size: 25px;
+    border-radius: 5px;
+}
+
+.change-form {
+    display: flex;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.change-form-text {
+    color: #757575;
+    font-weight: 400;
+}
+
+.change-form-a {
+    color: #275bec;
+    font-weight: 400;
+    margin-left: 5px;
+}   
+
+.form-error {
+    background-color: rgba(248, 0, 0, 0.74);
+    border-radius: 5px;
+    color: #fff;
+    margin: 5px 0 15px 0;
+}

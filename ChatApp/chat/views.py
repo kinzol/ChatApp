@@ -6,36 +6,25 @@ from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, ListView, CreateView
+from django.views.generic.edit import FormMixin, UpdateView
 
 from .models import *
 from .forms import *
 
+from .utils import *
 
-class MainMenu(LoginRequiredMixin, TemplateView):
+class MainMenu(DataMixin, LoginRequiredMixin, TemplateView):
     template_name = 'chat/index.html'
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = {"title": f"Main Menu", 'chats': self.get_chats()}
+        c_def = self.get_user_context(title=f"Main Menu")
         return dict(list(context.items()) + list(c_def.items()))
 
-    def get_chats(self):
-        chats = Chat.objects.filter(Q(user1=self.request.user.id) | Q(user2=self.request.user.id))
-        list_chats = []
-
-        for chat in chats:
-            try:
-                message = Messages.objects.filter(chat_id=chat.pk).order_by('-id')[:1][0]
-                list_chats.append([chat, message])
-            except Exception:
-                list_chats.append([chat, []])
-
-        return list_chats
 
 
-
-class ChatPage(LoginRequiredMixin, TemplateView):
+class ChatPage(DataMixin, LoginRequiredMixin, TemplateView):
     template_name = 'chat/chatPage.html'
     login_url = 'login'
 
@@ -43,37 +32,22 @@ class ChatPage(LoginRequiredMixin, TemplateView):
         user, messages = self.get_messages_info(kwargs['room_name'])
 
         context = super().get_context_data(**kwargs)
-        c_def = {'room_name': kwargs['room_name'], "title": f"Chat with {user}", 'mate_user': user, 'messages': messages, 'chats': self.get_chats()}
+        c_def = self.get_user_context(room_name=kwargs['room_name'], title=f"Chat with {user}", mate_user=user, messages=messages)
         return dict(list(context.items()) + list(c_def.items()))
 
 
     def get_messages_info(self, room_name):
-        chats = Chat.objects.get(pk=room_name)
-        if self.request.user.id == chats.user1.id or self.request.user.id == chats.user2.id:
+        chat = Chat.objects.get(pk=room_name)
+        chat_users = chat.participants.all()
+        if self.request.user in chat_users:
             messages = Messages.objects.filter(chat_id=room_name)
-
-        if self.request.user.id == chats.user1.id:
-            user = chats.user2
+            user = chat_users[0] if self.request.user != chat_users[0] else chat_users[1]
+            return user, messages
         else:
-            user = chats.user1
-
-        return user, messages
-
-    def get_chats(self):
-        chats = Chat.objects.filter(Q(user1=self.request.user.id) | Q(user2=self.request.user.id))
-        list_chats = []
-
-        for chat in chats:
-            try:
-                message = Messages.objects.filter(chat_id=chat.pk).order_by('-id')[:1][0]
-                list_chats.append([chat, message])
-            except Exception:
-                list_chats.append([chat, []])
-        return list_chats
+            redirect('home')
 
 
-class SearchUsers(LoginRequiredMixin, ListView):
-    model = User
+class SearchUsers(DataMixin, LoginRequiredMixin, TemplateView):
     template_name = 'chat/search_users.html'
     login_url = 'login'
 
@@ -81,21 +55,24 @@ class SearchUsers(LoginRequiredMixin, ListView):
         result = self.get_search_result(self.kwargs['search_name'])
 
         context = super().get_context_data(**kwargs)
-        c_def = {"title": f"Search result: {self.kwargs['search_name']}", 'search_result': result}
+        c_def = self.get_user_context(title=f"Search result: {self.kwargs['search_name']}", search_result=result)
         return dict(list(context.items()) + list(c_def.items()))
 
     def get_search_result(self, search_name):
-        result = User.objects.filter(Q(username__icontains=search_name))
+        result = User.objects.filter(Q(username__icontains=search_name) & ~Q(pk=self.request.user.id))
         return result
 
 @login_required(login_url='login')
 def new_chat(request, id_user):
     mate = User.objects.get(pk=id_user)
 
-    if request.user.id != mate.id:
-        chats = Chat.objects.filter((Q(user1=request.user) | Q(user2=request.user)) & (Q(user1=mate) | Q(user2=mate)))
+    if request.user != mate:
+        chats_with_user = Chat.objects.filter(participants=request.user)
+        chats = chats_with_user.filter(participants=mate)
         if not chats:
-            new_chat = Chat(user1=request.user, user2=mate)
+            new_chat = Chat.objects.create()
+            new_chat.participants.add(request.user)
+            new_chat.participants.add(mate)
             new_chat.save()
             return redirect(f'/chat/{new_chat.id}')
         else:
@@ -103,6 +80,42 @@ def new_chat(request, id_user):
     return redirect('home')
 
 
+class Settings(DataMixin, LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = SettingsForm
+    template_name = 'chat/settings.html'
+    login_url = 'login'
+    success_url = reverse_lazy('settings')
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title=f"Settings", profile=self.get_data_profile())
+        return dict(list(context.items()) + list(c_def.items()))
+
+    def get_data_profile(self):
+        return Profile.objects.get(user=self.request.user)
+
+
+class UserProfile(DataMixin, LoginRequiredMixin, ListView):
+    model = User
+    template_name = 'chat/user_profile.html'
+    context_object_name = 'user'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title=f"Profile: {self.kwargs['username']}")
+        return dict(list(context.items()) + list(c_def.items()))
+
+
+    def get_queryset(self):
+        queryset = User.objects.get(username=self.kwargs['username'])
+        return queryset
+
+
+#auth
 class LoginUser(LoginView):
     form_class = LoginUserForm
     template_name = "chat/login.html"

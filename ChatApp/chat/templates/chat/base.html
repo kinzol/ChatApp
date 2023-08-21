@@ -6,40 +6,71 @@
     <meta charset="utf-8"/>
     <title>{{title}}</title>
     <link rel="stylesheet" href="{% static 'chat/css/styles.css' %}" type="text/css">
+    <link rel="shortcut icon" href="{% static 'chat/image/logo-blue.png' %}" type="image/png">
+    {% block head %}
+    {% endblock %}
 </head>
 <body>
 
-<div class="chats-chat">
-    <div class="other-chats">
-        <div class="other-chat-search">
-            <div class="message-input-search">
-                <div style="padding: 0 5px 0 5px; width: 90%;"><input id="chat-search-input" placeholder="Search more users..." type="text" size="100"></div>
-                <div style="margin-left: auto;"><button id="chat-search-submit"><img class="send-button" src="{% static 'chat/svg/send.svg' %}"></button></div>
+<div class="full-page">
+    <div class="users-chats">
+        <div class="users-chats-search">
+            <div class="users-chats-search-container-input">
+                <div style="padding: 0 5px 0 5px; width: 90%;">
+                    <input id="users-chats-search-input" placeholder="Search more users..." type="text" size="100">
+                </div>
+                <div style="margin-left: auto;">
+                    <button id="users-chats-search-submit"><img class="users-chats-search-button" src="{% static 'chat/svg/send.svg' %}"></button>
+                </div>
             </div>
         </div>
-        <div class="other-chat-chats">
+        <div class="users-chats-list">
             {% for chat in chats %}
-            <a href="/chat/{{chat.0.pk}}"><div class="chat-user">
-                <div style="display: flex;">
-                    {% if chat.0.user1.id == request.user.id %}
-                        <h1>{{chat.0.user2}}</h1>
-                        <div style="display: flex; margin-inline-start: auto;"><h3 title="{{chat.1.time_create}}" class="content-chats">{{chat.1.time_create|date:"G:i"}}</h3></div>
-                    {%else%}
-                        <h1>{{chat.0.user1}}</h1>
-                        <div style="display: flex; margin-inline-start: auto;"><h3 title="{{chat.1.time_create}}" class="content-chats">{{chat.1.time_create|date:"G:i"}}</h3></div>
+            {% if chat.0.pk == room_name %}
+                <a href="/chat/{{chat.0.pk}}"><div class="users-chats-list-user-selected">
+            {% else %}
+                <a href="/chat/{{chat.0.pk}}"><div id="chat-{{chat.0.pk}}" class="users-chats-list-user">
+                {% if chat.2 > 0 and chat.2 < 100 %}
+                    <div class="user-chats-list-notread">{{chat.2}}</div>
+                {% elif chat.2 >= 100 %}
+                    <div class="user-chats-list-notread">99</div>
+                {% endif %}
+            {% endif %}
+            <div id='avatar-{{ chat.4.pk }}' style="display: flex; position: relative;">
+                <div class='user-chats-list-avatar'>
+                    <img class="user-chats-list-avatar-img" src="{{ chat.4.profile.avatar.url }}">
+                </div>
+                {% if chat.4.profile.status_online %}
+                    <div class="user-chats-list-avatar-status-online" title="online"></div>
+                {% else %}
+                    <div class="user-chats-list-avatar-status-offline"></div>
+                {% endif %}
+
+
+                <div style="display: grid;">
+                    <h1>{{chat.4}}</h1>
+                    {% if chat.1.content|length > 20%}
+                        <h3 id="message-{{chat.0.pk}}" class="users-chats-list-last-message">{{chat.1.content|slice:":17" }}...</h3>
+                    {% else %}
+                        <h3 id="message-{{chat.0.pk}}" class="users-chats-list-last-message">{{chat.1.content|slice:":20" }}</h3>
                     {% endif %}
                 </div>
-                <h3 class="content-chats">{{chat.1.content}}</h3>
+                <div style="display: flex; margin-inline-start: auto;">
+                    <h3 id="time-{{chat.0.pk}}" title="{{chat.1.time_create}}" class="users-chats-list-last-message">{{chat.1.time_create|date:"G:i"}}</h3>
+                </div>
+            </div>
             </div></a>
-            <hr style="width: 90%; border: 1px solid #535363">
             {% endfor %}
         </div>
-        <div class="other-chat-profile">
-            <div>
+        <div class="users-chats-profile">
+            <div class='users-chats-profile-avatar'>
+                <img class="users-chats-profile-avatar-img" src="{{ request.user.profile.avatar.url }}">
+            </div>
+            <div style="margin-left: 5px;">
                 <h4 style="color: #ceced8;">Your profile</h4>
                 <h3>{{request.user.username}}</h3>
             </div>
-            <a href='/logout' class="signout-button">Sign out</a>
+            <a href='{% url "settings" %}' class="settings-button">Settings</a>
         </div>
     </div>
 

@@ -1,8 +1,34 @@
+
 {% extends 'chat/base.html' %}
 {% load static %}
 
+{% block head %}
+<link rel="stylesheet" href="{% static 'chat/css/user_profile_style.css' %}" type="text/css">
+{% endblock %}
+
 {% block content %}
-<div class="chat"></div>
+<div class="chat">
+<div class="profile">
+    <div class="profile-info">Profile</div>
+    <div class="profile-container">
+        <div class='profile-avatar'><img class="profile-avatar-img" src="{{ user.profile.avatar.url }}"></div>
+        <div class="profile-username">{{user.username}}</div>
+        {% if user.profile.status_online %}
+        <div class="profile-last-online-true" title="online">
+            Online
+        </div>
+        {% else %}
+        <div class="profile-last-online" title="{{user.profile.last_online}}">
+            Last seen: {{user.profile.last_online|date:'d F, H:i'}}
+        </div>
+        {% endif %}
+        <div class="profile-bio">{{user.profile.bio}}</div>
+        <div class="profile-addchat-button">
+            <a class="profile-addchat-button-a" href="/newchat/{{user.pk}}">Send message</a>
+        </div>
+    </div>
+</div>
+</div>
 
 <script>
     document.querySelector('#users-chats-search-input').focus();
@@ -82,7 +108,6 @@
                 }
             }
         }
-
         generalSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
@@ -90,5 +115,3 @@
 </script>
 
 {% endblock %}
-
-

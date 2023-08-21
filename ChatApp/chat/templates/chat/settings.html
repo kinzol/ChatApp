@@ -1,8 +1,40 @@
 {% extends 'chat/base.html' %}
 {% load static %}
 
+{% block head %}
+<link rel="stylesheet" href="{% static 'chat/css/settings_style.css' %}" type="text/css">
+{% endblock %}
+
 {% block content %}
-<div class="chat"></div>
+<div class="chat">
+<div class="settings">
+    <div class="settings-info">Settings</div>
+    <div class="settings-container">
+        <div class='settings-avatar'><img class="settings-avatar-img" src="{{ profile.avatar.url }}"></div>
+        <div class="settings-username">{{user}}</div>
+        <form method="post" enctype="multipart/form-data" style='display: grid'>
+            {% csrf_token %}
+            <div class="settings-change-avatar">
+                <div class="settings-change-avatar-text">Avatar change</div>
+                
+                <input type="file" name="{{ form.avatar.name }}" id="{{ form.avatar.id_for_label }}" accept="image/*"
+                accept=".jpg, .jpeg, .png">
+
+                <div class="form-error">{{form.avatar.errors}}</div>
+            </div>
+            <div class="settings-change-bio-container">
+                <div class="settings-change-bio-text">Your bio</div>
+                {{ form.bio }}
+                <div class="form-error">{{form.bio.errors}}</div>
+            </div>
+            <button type="submit">Save</button>
+            <div class="form-error">{{ form.non_field_errors }}</div>
+          </form>
+          <div style="display: flex;"><a href='{% url "logout" %}' class="signout-button">Sign out</a></div>
+    </div>  
+</div>
+</div>
+
 
 <script>
     document.querySelector('#users-chats-search-input').focus();
@@ -82,7 +114,6 @@
                 }
             }
         }
-
         generalSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
@@ -90,5 +121,3 @@
 </script>
 
 {% endblock %}
-
-

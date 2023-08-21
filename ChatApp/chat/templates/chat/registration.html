@@ -1,16 +1,29 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta>
     <title>{{title}}</title>
+    <link rel="stylesheet" href="{% static 'chat/css/auth_style.css' %}" type="text/css">
+    <link rel="shortcut icon" href="{% static 'chat/image/logo-blue.png' %}" type="image/png">
 </head>
 <body>
-<h2>Log In</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Register</button>
-    <a href="/login">If you have account - login</a>
-</form>
+<div class="login-container">
+  <h1 class="header">Hello Newcomer!</h1>
+  <h3 class="header-second">Welcome aboard, we're excited to have you join us.</h3>
+  <form method="post" style='display: grid'>
+    {% csrf_token %}
+    {% for i in form %}
+    {{i}}
+    <div class="form-error">{{i.errors}}</div>
+    {% endfor %}
+    <button type="submit">Register</button>
+    <div class="form-error">{{ form.non_field_errors }}</div>
+    <div class='change-form'>
+      <h4 class="change-form-text">Not a part of our community yet?</h4><h4><a class="change-form-a" href="/login">Join us now!</a></h4>
+    </div>
+  </form>
+</div>  
 </body>
 </html>

@@ -7,9 +7,11 @@ urlpatterns = [
     path("chat/<int:room_name>", ChatPage.as_view(), name="chat-page"),
     path('search/<str:search_name>', SearchUsers.as_view(), name='search_users'),
     path('newchat/<int:id_user>', new_chat, name='new_chat'),
-    path('logout/', logout_user, name='logout'),
+    path('settings/', Settings.as_view(), name='settings'),
+    path('user/<str:username>', UserProfile.as_view(), name='user_profile'),
 
-    # login-section
+    #auth
+    path('logout/', logout_user, name='logout'),
     path("login/", LoginUser.as_view(), name="login"),
     path("registration/", RegisterUser.as_view(), name="register"),
 ]

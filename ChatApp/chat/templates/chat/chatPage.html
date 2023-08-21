@@ -3,9 +3,18 @@
 {% block content %}
 
 <div class="chat">
-        <div class="user-info">
-            <h1>{{mate_user}}</h1>
+        <a href="{% url 'user_profile' username=mate_user.username%}">
+        <div class="chat-user-info">
+            <h2>{{mate_user}}</h2>
+            {% if mate_user.profile.status_online == True %}
+            <div class="chat-user-info-status-online">online</div>
+            {% else%}
+            <div class="chat-user-info-status-offline" title="{{mate_user.profile.last_online|date:'d F, Y, H:i'}}">
+                Last seen: {{mate_user.profile.last_online|date:'d F, H:i'}}
+            </div>
+            {% endif %}
         </div>
+        </a>
         <div id="chat">
             {% for message in messages %}
                 {% if message.user.id == request.user.id %}
@@ -13,7 +22,15 @@
                     <div style="display:flex">
                         <!-- <div class="message-name">{{message.user}}</div> -->
                         <div class="message-content">{{message.content}}</div>
-                        <div class="message-time" title="{{message.time_create}}">{{message.time_create|date:"G:i"}}</div>
+                        <div class="message-time" title="{{message.time_create}}">{{message.time_create|date:"G:i"}}
+                            <div class="message-status">
+                                {% if message.read == 1 %}
+                                    <img class="message-status-img" src="{% static 'chat/svg/check_mark_true.svg' %}">
+                                {% else %}
+                                    <img class="message-status-img" src="{% static 'chat/svg/check_mark_false.svg' %}">
+                                {% endif %}    
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% else %}
@@ -29,7 +46,7 @@
         </div>
         <div class="message-input">
             <div style="padding: 0 5px 0 5px; width: 90%;"><input id="chat-message-input" placeholder="Type a message..." type="text" size="100"><br></div>
-            <div style="margin-left: auto;"><button id="chat-message-submit"><img class="send-button" src="{% static 'chat/svg/send.svg' %}"></button></div>
+            <div style="margin-left: auto;"><button id="chat-message-submit"><img class="users-chats-search-button" src="{% static 'chat/svg/send.svg' %}"></button></div>
         </div>
     </div>
 </div>
@@ -41,18 +58,23 @@
         });
 
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
+        const generalSocket = new WebSocket(`ws://${window.location.host}/ws/general/`);
 
-        const chatSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/chat/'
-            + roomName
-            + '/'
-        );
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
 
+            if (data.hasOwnProperty('status_read')) {
+                if (data.is_connect === true && data.from_user === "{{ request.user.username }}") {return}
+                var messageStatusImgs = document.querySelectorAll(".message-status-img");
+                messageStatusImgs.forEach(function(img) {
+                    if (img.src !== "{% static 'chat/svg/check_mark_true.svg' %}") {
+                        img.src = "{% static 'chat/svg/check_mark_true.svg' %}";
+                    }
+                });
+                return
+            }
 
             var mateMessageDiv = document.createElement("div");
             if ('{{request.user.username}}' == data.username) {
@@ -68,6 +90,16 @@
             var messagetimeDiv = document.createElement("div");
             messagetimeDiv.className = "message-time";
             messagetimeDiv.textContent = data.time;
+            
+            if ('{{request.user.username}}' == data.username) {
+                var messagestatusDiv = document.createElement("div");
+                messagestatusDiv.className = "message-status";
+                var checkMarkImg = document.createElement("img");
+                checkMarkImg.className = "message-status-img";
+                checkMarkImg.src = "{% static 'chat/svg/check_mark_false.svg' %}";
+                messagestatusDiv.appendChild(checkMarkImg);
+                messagetimeDiv.appendChild(messagestatusDiv);
+            }
 
             var contentDiv = document.createElement("div");
             contentDiv.className = "message-content";
@@ -90,6 +122,17 @@
 
             const scrollContainer = document.getElementById("chat");
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
+
+            
+            var change_message_in_sidebar = document.getElementById("message-{{room_name}}");
+            if (change_message_in_sidebar) {
+                change_message_in_sidebar.textContent = data.message.slice(0, 20);;
+            }
+            var change_time_in_sidebar = document.getElementById("time-{{room_name}}");
+            if (change_time_in_sidebar) {
+                change_time_in_sidebar.title = data.time
+                change_time_in_sidebar.textContent = data.time;
+            }
         };
 
         chatSocket.onclose = function(e) {
@@ -107,28 +150,114 @@
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             if (message != "") {
-                chatSocket.send(JSON.stringify({
-                    'message': message,
-                    'username': "{{request.user.username}}"
-                }));
+                if (message.length > 256) {
+                    alert('Too many characters!')
+                    return
+                }
+                chatSocket.send(JSON.stringify({'message': message, 'username': "{{request.user.username}}"}));
+                generalSocket.send(JSON.stringify({'from_chat': roomName, 'to_user': "{{mate_user.id}}"}));
                 messageInputDom.value = '';
                 var myAudio = new Audio('{% static "chat\sounds\send_message.mp3" %}');
                 myAudio.play();
             }
         };
 
-        document.querySelector('#chat-search-input').focus();
-        document.querySelector('#chat-search-input').onkeyup = function(e) {
+        document.querySelector('#users-chats-search-input').onkeyup = function(e) {
             if (e.key === 'Enter') {  // enter, return
-                document.querySelector('#chat-search-submit').click();
+                document.querySelector('#users-chats-search-submit').click();
             }
         };
 
-        document.querySelector('#chat-search-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-search-input');
+        document.querySelector('#users-chats-search-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#users-chats-search-input');
             const message = messageInputDom.value;
+            if (message != "") {
             window.location.href = decodeURIComponent(`/search/${message}`);
+            }
         };
 
+        generalSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+
+            if (data.hasOwnProperty('status_online')) {
+                if (data.status_online == true) {
+                    if (String(data.from_user) == "{{mate_user.id}}") {
+                        var messageStatusOnline = document.querySelectorAll(".chat-user-info-status-offline");
+                        messageStatusOnline.forEach(function(element) {
+                            element.classList = "chat-user-info-status-online";
+                            element.textContent = 'online'
+                            element.title = 'online'
+                        });
+                    }
+                    var divavatar = document.querySelector(`#avatar-${data.from_user}`);
+                    if (divavatar) {
+                        var statusElement = divavatar.querySelector('.user-chats-list-avatar-status-offline');
+                        if (statusElement) {
+                            statusElement.classList = ('user-chats-list-avatar-status-online');
+                            statusElement.title = 'online'
+                        }
+                    }
+                } else {
+                    if (String(data.from_user) == "{{mate_user.id}}") {
+                        var messageStatusOnline = document.querySelectorAll(".chat-user-info-status-online");
+                        messageStatusOnline.forEach(function(element) {
+                            element.classList = "chat-user-info-status-offline";
+                            element.textContent = `Last seen: ${data.last_online}`
+                            element.title = `Last seen: ${data.last_online}`
+                        });
+                    }
+                    var divavatar = document.querySelector(`#avatar-${data.from_user}`);
+                    if (divavatar) {
+                        var statusElement = divavatar.querySelector('.user-chats-list-avatar-status-online');
+                        if (statusElement) {
+                            statusElement.classList = ('user-chats-list-avatar-status-offline');
+                            statusElement.title = null
+                        }
+                    }
+                } 
+            }
+
+            if ('{{request.user.id}}' == data.to_user) {
+                var myAudio = new Audio('{% static "chat\sounds\get_message.mp3" %}');
+                myAudio.play();
+            }
+
+            var change_message_in_sidebar = document.getElementById(`message-${data.from_chat}`);
+            if (change_message_in_sidebar) {
+                change_message_in_sidebar.textContent = 'New message!';
+            }
+            var change_time_in_sidebar = document.getElementById(`time-${data.from_chat}`);
+            if (change_time_in_sidebar) {
+                change_time_in_sidebar.title = data.time
+                change_time_in_sidebar.textContent = data.time;
+            }
+
+            const targetDiv = document.getElementById(`chat-${data.from_chat}`);
+            if (targetDiv) {
+                // Проверяем наличие класса 'user-chats-list-notread'
+                if (!targetDiv.querySelector('.user-chats-list-notread')) {
+                    const newDiv = document.createElement('div');
+                    newDiv.className = 'user-chats-list-notread';
+                    newDiv.textContent = '1'
+                    targetDiv.appendChild(newDiv);
+                } else {
+                    const existingDiv = targetDiv.querySelector('.user-chats-list-notread');
+                    const content = existingDiv.textContent;
+                    const currentValue = parseInt(content, 10);
+                    if (!isNaN(currentValue)) {
+                        const newValue = currentValue + 1;
+                        if (newValue < 100) {
+                            existingDiv.textContent = newValue.toString();
+                        } else {
+                            existingDiv.textContent = '99';
+                        }
+                    }
+                }
+            }
+        }
+
+        generalSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
     </script>
 {% endblock %}

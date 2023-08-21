@@ -1,58 +1,118 @@
+{% extends 'chat/base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>{{title}}</title>
-    <link rel="stylesheet" href="{% static 'chat/css/styles.css' %}" type="text/css">
-</head>
-<body>
+{% block head %}
+<link rel="stylesheet" href="{% static 'chat/css/search_user_style.css' %}" type="text/css">
+{% endblock %}
 
-<div class="chats-chat">
-    <div class="other-chats">
-        <div class="other-chat-search">
-            <div class="message-input-search">
-                <div style="padding: 0 5px 0 5px; width: 90%;"><input id="chat-search-input" placeholder="Search more users..." type="text" size="100"></div>
-                <div style="margin-left: auto;"><button id="chat-search-submit"><img class="send-button" src="{% static 'chat/svg/send.svg' %}"></button></div>
-            </div>
-        </div>
-        <div class="other-chat-chats">
-            <a href="{% url 'home' %}"><div class="return-button">Return to main page</div></a>
+{% block content %}
+<div class="chat">
+        <div class="search-results-container">
             {% if search_result|length > 0 %}
-            {% for i in search_result %}
-            <a href="/newchat/{{i.id}}"><div class="search-result-content">
-                <div>{{i.username}}</div>
-            </div></a>
-            <hr style="width: 90%; border: 1px solid #535363">
-            {% endfor %}
+                <div class="search-results-info">Number of results: {{search_result|length}}</div>
             {% else %}
-            <h2 style="text-align: center; color: #fff;">Results not found</h2>
+                <div class="search-results-info">No results found.</div>
             {% endif %}
-        </div>
-        <div class="other-chat-profile">
-            <div>
-                <h4 style="color: #ceced8;">Your profile</h4>
-                <h3>{{request.user.username}}</h3>
+            {% for profile in search_result %}
+            <a href="{% url 'user_profile' username=profile.username%}">
+            <div class="search-result-profile">
+                <div class='profile-avatar'>
+                    <img class="profile-avatar-img" src="{{ profile.profile.avatar.url }}">
+                </div>
+                <div style='display: grid;'>
+                    <div class='search-result-profile-name'>{{profile}}</div>
+                    {% if profile.profile.status_online %}
+                        <div class='search-result-profile-status-online'>online</div>
+                    {% else %}
+                        <div class='search-result-profile-status-offline' title="{{profile.profile.last_online}}">
+                            Last seen: {{profile.profile.last_online|date:'d F, H:i'}}
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <a href='/logout' class="signout-button">Sign out</a>
+            </a>
+            {% endfor %}
         </div>
-    </div>
-
+</div>
+    {{ room_name|json_script:"room-name" }}
     <script>
-        document.querySelector('#chat-search-input').focus();
-        document.querySelector('#chat-search-input').onkeyup = function(e) {
+        const generalSocket = new WebSocket(`ws://${window.location.host}/ws/general/`);
+
+        document.querySelector('#users-chats-search-input').onkeyup = function(e) {
             if (e.key === 'Enter') {  // enter, return
-                document.querySelector('#chat-search-submit').click();
+                document.querySelector('#users-chats-search-submit').click();
             }
         };
-    
-        document.querySelector('#chat-search-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-search-input');
+
+        document.querySelector('#users-chats-search-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#users-chats-search-input');
             const message = messageInputDom.value;
+            if (message != "") {
             window.location.href = decodeURIComponent(`/search/${message}`);
+            }
         };
-    
+
+        generalSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+
+            if (data.hasOwnProperty('status_online')) {
+                if (data.status_online == true) {
+                    var divavatar = document.querySelector(`#avatar-${data.from_user}`);
+                    if (divavatar) {
+                        var statusElement = divavatar.querySelector('.user-chats-list-avatar-status-offline');
+                        if (statusElement) {
+                            statusElement.classList = ('user-chats-list-avatar-status-online');
+                            statusElement.title = 'online'
+                        }
+                    }
+                } else {
+                    var divavatar = document.querySelector(`#avatar-${data.from_user}`);
+                    var statusElement = divavatar.querySelector('.user-chats-list-avatar-status-online');
+                    statusElement.classList = ('user-chats-list-avatar-status-offline');
+                    statusElement.title = null} 
+            }
+
+            if ('{{request.user.id}}' == data.to_user) {
+                var myAudio = new Audio('{% static "chat\sounds\get_message.mp3" %}');
+                myAudio.play();
+            }
+
+            var change_message_in_sidebar = document.getElementById(`message-${data.from_chat}`);
+            if (change_message_in_sidebar) {
+                change_message_in_sidebar.textContent = 'New message!';
+            }
+            var change_time_in_sidebar = document.getElementById(`time-${data.from_chat}`);
+            if (change_time_in_sidebar) {
+                change_time_in_sidebar.title = data.time
+                change_time_in_sidebar.textContent = data.time;
+            }
+
+            const targetDiv = document.getElementById(`chat-${data.from_chat}`);
+            if (targetDiv) {
+                // Проверяем наличие класса 'user-chats-list-notread'
+                if (!targetDiv.querySelector('.user-chats-list-notread')) {
+                    const newDiv = document.createElement('div');
+                    newDiv.className = 'user-chats-list-notread';
+                    newDiv.textContent = '1'
+                    targetDiv.appendChild(newDiv);
+                } else {
+                    const existingDiv = targetDiv.querySelector('.user-chats-list-notread');
+                    const content = existingDiv.textContent;
+                    const currentValue = parseInt(content, 10);
+                    if (!isNaN(currentValue)) {
+                        const newValue = currentValue + 1;
+                        if (newValue < 100) {
+                            existingDiv.textContent = newValue.toString();
+                        } else {
+                            existingDiv.textContent = '99';
+                        }
+                    }
+                }
+            }
+        }
+
+        generalSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
     </script>
-</body>
-</html>
+{% endblock %}

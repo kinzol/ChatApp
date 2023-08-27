@@ -1,0 +1,322 @@
+body {
+    background-color: #292929;
+    font-family: system-ui, sans-serif;
+    height: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.group {
+    background-color: #d6d5d5;
+    position: relative;
+    width: 60%;
+    height: 95%;
+    overflow: auto;
+    margin: auto;
+    border-radius: 5px;
+    color: #2b2b2b;
+    border: 2px solid #ffffff;
+    display: grid;
+}
+
+.group-container {
+    position: relative;
+    margin: 40px;
+    margin-top: 80px;
+}
+
+.group-avatar {
+    width: 132px;
+    height: 132px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 50%;
+    position: relative;
+    border: 3px solid #fff;
+    background-color: #fff;
+}
+
+.group-avatar-img {
+    position: absolute;
+    width: auto;
+    height: 100%;
+    margin: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.group-username {
+    font-size: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.group-bio {
+    font-size: 20px;
+    text-align: center;
+    font-weight: 400;
+    margin-bottom: 10px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: auto;
+
+}
+
+.group-addchat-button {
+    text-align: center;
+    margin-top: auto;
+}
+
+.group-addchat-button-a {
+    background-color: #275bec;
+    font-size: 20px;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.group-info {
+    position: absolute;
+    font-size: 25px;
+    font-weight: 600;
+    border-radius: 5px;
+    color: #275bec;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.group-mobile-menu-button {
+    display: none;
+    border: none;
+    background-color: #d6d5d5;
+    color: #fff;
+    height: 50px;
+    width: 50px;
+    font-size: 20px;
+    margin: auto;
+    border-radius: 5px;
+    padding: 0;
+}
+
+.group-last-online {
+    margin-bottom: 5px;
+    font-size: 15px;
+    color: #dbdbdb;
+}
+
+.group-last-online-true {
+    margin-bottom: 5px;
+    font-size: 20px;
+    color: #275bec;
+}
+
+.group-members {
+    display: grid;
+    position: relative;
+    background-color: #a3a3ad;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.group-create-time {
+    text-align: center;
+    font-size: 20px
+}
+
+.group-member-user {
+    display: flex;
+    margin: 10px;
+    padding: 5px;
+    color: #fff;
+    font-weight: 500;
+    font-size: 30px;
+    background-color: #7c7c88;
+    border-radius: 5px;
+}
+
+.group-member-user-buttons {
+    background-color: #666670;
+    margin-left: auto;
+    display: grid;
+    text-align: center;
+    border-radius: 5px;
+    font-size: 20px;
+}
+
+.group-member-user-buttons-admin-add {
+    margin: 5px;
+    background-color: #5ad860;
+    border-radius: 5px;
+}
+
+.group-member-user-buttons-admin-remove {
+    margin: 5px;
+    background-color: #fc4949;
+    border-radius: 5px;
+}
+
+.group-member-user-buttons-kick {
+    margin: 5px;
+    background-color: #fc4949;
+    border-radius: 5px;
+}
+
+.group-member-user-buttons-leave {
+    margin: 5px;
+    margin-top: 15px;
+    background-color: #fc4949;
+    border-radius: 5px;
+    font-size: 25px;
+    text-align: center;
+}
+
+.group-member-user-root {
+    width: 45px;
+    font-size: 17px;
+    border-radius: 5px;
+    color: #292929;
+    border: 2px solid #292929;
+    text-align: center;
+}
+
+.group-member-user-admin {
+    width: 50px;
+    font-size: 17px;
+    border-radius: 5px;
+    color: #36d358;
+    border: 2px solid #36d358;
+    text-align: center;
+}
+
+.group-member-user-buttons-add {
+    background-color: #36d358;
+    margin: 10px;
+    font-size: 25px;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.group-add-new-user {
+    width: 25px;
+    height: 25px;
+}
+
+.group-add-user-container {
+    background-color: #7C7C88;
+    margin: 10px;
+    border-radius: 5px;
+    font-size: 30px;
+    margin-bottom: auto;
+    color: #fff;
+    display: grid
+}
+
+label{
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.group-container-container {
+    background-color: #A3A3AD;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.submit {
+    background-color: #36d358;
+    border: none;
+    color: #fff;
+    border-radius: 5px;
+    width: 100%;
+    font-size: 25px;
+    margin-top: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.group-username-edit {
+    text-align: center;
+    display: none;
+}
+
+.group-bio-edit {
+    text-align: center;
+    display: none;
+}
+
+textarea {
+    width: 80%;
+    resize: none;
+}
+
+#id_name {
+    font-size: 25px;
+    width: 80%;
+    margin: 5px;
+}
+
+#id_bio {
+    font-size: 15px;
+    margin: 5px;
+}
+
+.show-submit {
+    display: none;
+}
+
+.group-avatar-edit {
+    display: none;
+    text-align: center;
+    font-weight: 500;
+}
+
+.edit-btn {
+    background-color: #275bec;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 25px;
+    text-align: center;
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.edit-btn:hover {
+    background-color: #3168ff;
+}
+
+@media (max-width: 800px){
+
+    .group {
+        width: 90%;
+    }
+
+    .group-mobile-menu-button {
+        display: flex;
+    }
+
+    .group-container {
+        margin: 10px;
+        margin-top: 80px;
+    }
+
+    .group-username {
+        font-size: 18px;
+    }
+
+}
+
+@media (max-width: 1250px) {
+
+    .group {
+        width: 95%;
+    }
+
+}

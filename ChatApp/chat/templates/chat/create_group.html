@@ -1,47 +1,46 @@
+
 {% extends 'chat/base.html' %}
 {% load static %}
 
 {% block head %}
-<link rel="stylesheet" href="{% static 'chat/css/settings_style.css' %}" type="text/css">
+<link rel="stylesheet" href="{% static 'chat/css/group_create_style.css' %}" type="text/css">
 {% endblock %}
 
 {% block content %}
 <div class="chat">
-<div class="settings">
-    <div class="settings-info">
-        <a href="{% url 'home' %}"><button class="settings-mobile-menu-button">
-            <img class='back-img' src="{% static 'chat/svg/back-gray.svg' %}">
-        </button></a>
-        Settings
-    </div>
-    <div class="settings-container">
-        <div class='settings-avatar'><img class="settings-avatar-img" src="{{ profile.avatar.url }}"></div>
-        <div class="settings-username">{{user}}</div>
-        <form method="post" enctype="multipart/form-data" style='display: grid'>
+    <div class="create-group">
+        <form method = "post" enctype="multipart/form-data" class="form">
             {% csrf_token %}
-            <div class="settings-change-avatar">
-                <div class="settings-change-avatar-text">Avatar change</div>
-                
-                <input type="file" name="{{ form.avatar.name }}" id="{{ form.avatar.id_for_label }}" accept="image/*"
-                accept=".jpg, .jpeg, .png">
-
-                <div class="form-error">{{form.avatar.errors}}</div>
+            <div class="create-group-title-name">
+            <a href="{% url 'home' %}" class="tag-a"><div class="group-mobile-menu-button">
+                <img class='back-img' src="{% static 'chat/svg/back-gray.svg' %}">
+            </div></a>
+            New Group
+        </div>
+        <div class="create-group-name">
+            <div class='group-avatar'><img class="group-avatar-img" src="{% static 'chat/image/default_group_avatar.jpg' %}"></div>
+            {{form.name}}
+            <div class="form-error">{{form.name.errors}}</div>
+            {{form.bio}}
+            <div class="form-error">{{form.bio.errors}}</div>
+            Choose new avatar: {{form.avatar}}
+            <div class="form-error">{{form.avatar.errors}}</div>
+            <div class="create-group-members">
+                Choose new members:
+                {% for user in form.participants %}
+                <div class="create-group-user">{{user}}</div>
+                {% endfor %}
             </div>
-            <div class="settings-change-bio-container">
-                <div class="settings-change-bio-text">Your bio</div>
-                {{ form.bio }}
-                <div class="form-error">{{form.bio.errors}}</div>
-            </div>
-            <button type="submit">Save</button>
+            <div class="form-error">{{form.participants.errors}}</div>
+            <button type="submit" class="create-group-btn">Create</button>
             <div class="form-error">{{ form.non_field_errors }}</div>
-          </form>
-          <div style="display: flex;"><a href='{% url "logout" %}' class="signout-button">Sign out</a></div>
-    </div>  
+        </div>
+    </form>
+    </div>
 </div>
-</div>
-
 
 <script>
+
     document.querySelector('#users-chats-search-input').focus();
     document.querySelector('#users-chats-search-input').onkeyup = function(e) {
         if (e.key === 'Enter') {  // enter, return

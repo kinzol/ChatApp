@@ -52,3 +52,30 @@
     color: #fff;
     margin-left: 10px;
 }
+
+.settings-mobile-menu-button {
+    display: none;
+    border: none;
+    background-color: #45454e;
+    color: #fff;
+    height: 40px;
+    margin-left: 10px;
+    width: 35%;
+    font-size: 20px;
+    border-radius: 5px;
+    align-items: center;
+}
+
+@media (max-width: 800px){
+    .settings-mobile-menu-button {
+        display: grid;
+    }
+
+    .search-result-profile-name {
+        font-size: 30px;
+    }
+
+    .search-result-profile-status-offline {
+        font-size: 15px;
+    }
+}

@@ -1,0 +1,139 @@
+.create-group {
+    background-color: #d6d5d5;
+    position: relative;
+    width: 60%;
+    height: 90%;
+    overflow: auto;
+    margin: auto;
+    border-radius: 5px;
+    color: #2b2b2b;
+    border: 2px solid #ffffff;
+    padding: 5px;
+    display: grid;
+    font-size: 25px;
+}
+
+.create-group-title-name {
+    font-size: 25px;
+    font-weight: 500;
+    color: #275bec;
+    position: absolute;
+    left: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.form {
+    display: grid;
+}
+
+.form-error {
+    background-color: rgba(248, 0, 0, 0.74);
+    border-radius: 5px;
+    color: #fff;
+    margin: 5px 0 15px 0;
+}
+
+.create-group-name {
+    background-color: #b4b4b4;
+    margin: auto;
+    padding: 5px;
+    display: grid;
+    border-radius: 5px;
+}
+
+.group-avatar {
+    width: 132px;
+    height: 132px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 50%;
+    position: relative;
+    border: 3px solid #fff;
+    background-color: #fff;
+}
+
+.group-avatar-img {
+    position: absolute;
+    width: auto;
+    height: 100%;
+    margin: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.group-name {
+    font-size: 20px;
+    margin: 5px;
+}
+
+.group-bio {
+    font-size: 15px;
+    margin: 5px;
+}
+
+.create-group-members {
+    background-color: #858585;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.create-group-user {
+    background-color: #5f5f5f;
+    margin: 5px;
+    display: flex;
+    color: #fff;
+    border-radius: 5px;
+}
+
+label {
+    width: 100%;
+}
+
+.create-group-many-to-many {
+    height: 20px;
+    width: 20px;
+}
+
+textarea {
+    resize: none;
+}
+
+.create-group-btn {
+    border: none;
+    color: #fff;
+    background-color: #275bec;
+    font-size: 20px;
+    border-radius: 5px;
+}
+
+.group-mobile-menu-button {
+    display: none;
+    border: none;
+    background-color: #d6d5d5;
+    color: #fff;
+    height: 50px;
+    width: 50px;
+    font-size: 20px;
+    margin: auto;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.tag-a {
+    z-index: 99;
+}
+
+@media (max-width: 800px){
+
+    .create-group {
+        width: 90%;
+    }
+
+    .group-mobile-menu-button {
+        display: grid;
+    }
+}

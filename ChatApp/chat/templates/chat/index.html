@@ -5,6 +5,16 @@
 <div class="chat"></div>
 
 <script>
+    if (window.innerWidth < 810) {
+    var divUsersChats = document.querySelector(".users-chats");
+    var divChat = document.querySelector(".chat");
+    divUsersChats.style.display = "grid";
+    divUsersChats.style.width = '100%';
+    divChat.style.display = "none";
+    }
+
+
+
     document.querySelector('#users-chats-search-input').focus();
     document.querySelector('#users-chats-search-input').onkeyup = function(e) {
         if (e.key === 'Enter') {  // enter, return

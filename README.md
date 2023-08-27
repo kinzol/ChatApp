@@ -9,6 +9,16 @@
 >>    + Application of WebSocket technology for real-time communication.
 >>    + Provides instant display of data in real-time, such as new messages, message statuses, user statuses, and more.
 >
+>>+ ***Group chats***
+>>    + Administration system.
+>>    + Ability for the group founder to appoint administrators.
+>>    + Ability for administrators to remove participants.
+>>    + Invitations for new participants after group creation.
+> 
+>>+ ***Voice messages***
+>>    + There is a feature for recording and instantly sending voice messages in the chat.
+>  
+>
 >>+ ***Message Status Tracking***
 >>    + Ability to know if a message has been read by the recipient.
 >
@@ -24,7 +34,9 @@
 > 
 >>+ ***New Message Notifications***
 >>    +  Display of the number of unread messages in a specific chat as a counter.
-
+>
+>>+ ***Responsive design***
+>>    + Adapting the website for mobile devices and personal computers ensures usability across all platforms.
 ## Website Launch
 You need to open the terminal and navigate to the directory containing the `manage.py` file, and then execute the command:
 ```
@@ -50,6 +62,15 @@ ___
 >>    + Применение технологии WebSocket для оперативной связи.
 >>    + Обеспечивает мгновенное отображение данных в режиме реального времени, таких как новые сообщения, статусы сообщений, статусы пользователей, и другие.
 >
+>>+ ***Групповые чаты***
+>>    + Система администрирования.
+>>    + Возможность назначения администраторов основателем группы.
+>>    + Возможность исключения участников по решению администраторов.
+>>    + Приглашения новых участников после создания группы.
+> 
+>>+ ***Аудио сообщения***
+>>    + Имеется функция записи и мгновенной отправки голосовых сообщений в чате.
+> 
 >>+ ***Отслеживание статусов сообщений***
 >>    + Возможность узнать, было ли сообщение прочитано получателем.
 >
@@ -65,6 +86,9 @@ ___
 > 
 >>+ ***Информация о новых сообщений***
 >>    +  Отображение количества непрочитанных сообщений в конкретном чате в виде счетчика.
+>
+>>+ ***Адаптивная верстка***
+>>    + Адаптация сайта под мобильные устройства и персональные компьютеры обеспечивает удобство использования на любых платформах.
 
 ## Запуск сайта
 Необходимо открыть терминал и перейти в папку, где находится файл `manage.py` и выполнить команду:

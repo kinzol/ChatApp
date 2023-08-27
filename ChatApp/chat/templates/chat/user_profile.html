@@ -9,7 +9,12 @@
 {% block content %}
 <div class="chat">
 <div class="profile">
-    <div class="profile-info">Profile</div>
+    <div class="profile-info">
+        <a href="{% url 'home' %}"><button class="profile-mobile-menu-button">
+            <img class='back-img' src="{% static 'chat/svg/back-gray.svg' %}">
+        </button></a>
+        Profile
+    </div>
     <div class="profile-container">
         <div class='profile-avatar'><img class="profile-avatar-img" src="{{ user.profile.avatar.url }}"></div>
         <div class="profile-username">{{user.username}}</div>

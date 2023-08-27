@@ -74,3 +74,10 @@ button {
     color: #fff;
     margin: 5px 0 15px 0;
 }
+
+@media (max-width: 800px){
+
+    .login-container {
+        padding: 50px;
+    }
+}

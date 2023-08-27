@@ -13,15 +13,13 @@
             <button class="chat-mobile-menu-button">
                 <img class='back-img' src="{% static 'chat/svg/back.svg' %}">
             </button>
-            <a style="width: 100%;" href="{% url 'user_profile' username=mate_user.username%}">
-            <h2>{{mate_user}}</h2>
-            {% if mate_user.profile.status_online == True %}
-            <div class="chat-user-info-status-online">online</div>
-            {% else%}
-            <div class="chat-user-info-status-offline" title="{{mate_user.profile.last_online|date:'d F, Y, H:i'}}">
-                Last seen: {{mate_user.profile.last_online|date:'d F, H:i'}}
+            <a style="width: 100%;" href="{% url 'group-info' room_name=room_name %}">
+            <div>
+                <h2 style="display: flex;">{{group_name}}<div class="group-mark">Group</div></h2>
+                <div class="chat-user-info-status-offline" title="{{mate_user.profile.last_online|date:'d F, Y, H:i'}}">
+                    Members: {{group_users|length}}
+                </div>
             </div>
-            {% endif %}
         </div>
         </div>
         </a>
@@ -48,8 +46,8 @@
                 </div>
                 {% else %}
                     <div class="mate-message">
+                        <div class="message-name">{{message.user}}</div>
                         <div style="display:flex">
-                        <!-- <div class="message-name">{{message.user}}</div> -->
                             <div class="message-content">{{message.content}}</div>
                             <div class="message-time" title="{{message.time_create}}">{{message.time_create|date:"G:i"}}</div>
                         </div>
@@ -82,8 +80,8 @@
             </div>
             {% else %}
                 <div class="mate-message">
+                    <div class="message-name">{{message.user}}</div>    
                     <div style="display:flex">
-                    <!-- <div class="message-name">{{message.user}}</div> -->
                         <div class="message-content">
                             <audio class="mate-audio" controls controlsList="nodownload">
                                 <source src="/{{message.content}}">
@@ -126,7 +124,7 @@
         });
 
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
-        const chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
+        const chatSocket = new WebSocket(`ws://${window.location.host}/ws/group/${roomName}/`);
         const generalSocket = new WebSocket(`ws://${window.location.host}/ws/general/`);
 
 
@@ -156,7 +154,7 @@
 
 
 
-        let mediaStream = null; // Добавьте переменную для хранения медиапотока
+        let mediaStream = null;
 
         document.querySelector('#chat-message-mic').addEventListener('click', async function(){
     try {
@@ -265,11 +263,25 @@
             
             if (data.message_type == 'text') {
                 var contentDiv = document.createElement("div");
+                if (data.username != '{{request.user.username}}') {
+                    var messageName = document.createElement("div");
+                    messageName.className = "message-name";
+                    messageName.textContent = data.username;
+                    mateMessageDiv.appendChild(messageName);
+                }
                 contentDiv.className = "message-content";
                 contentDiv.textContent = data.message;
             } else if (data.message_type == 'audio') {
+
                 var contentDiv = document.createElement("div");
                 contentDiv.className = "message-content";
+
+                if (data.username != '{{request.user.username}}') {
+                    var messageName = document.createElement("div");
+                    messageName.className = "message-name";
+                    messageName.textContent = data.username;
+                    mateMessageDiv.appendChild(messageName);
+                }
 
                 var audioElement = document.createElement("audio");
                 audioElement.className = whoseAudio;
@@ -282,7 +294,6 @@
                 audioElement.appendChild(sourceElement);
                 contentDiv.appendChild(audioElement);
             }
-
             innerDiv.appendChild(contentDiv);
             innerDiv.appendChild(messagetimeDiv);
             mateMessageDiv.appendChild(innerDiv);
@@ -303,14 +314,15 @@
 
             
             var change_message_in_sidebar = document.getElementById("message-{{room_name}}");
-            if (change_message_in_sidebar) {
-                change_message_in_sidebar.textContent = data.message.slice(0, 20);;
+            if (data.message_type == 'text') {
+                change_message_in_sidebar.textContent = data.message.slice(0, 20);
+            } else if (data.message_type == 'audio') {
+                change_message_in_sidebar.textContent = 'Voice message'
             }
+
             var change_time_in_sidebar = document.getElementById("time-{{room_name}}");
-            if (change_time_in_sidebar) {
-                change_time_in_sidebar.title = data.time
-                change_time_in_sidebar.textContent = data.time;
-            }
+            change_time_in_sidebar.title = data.time
+            change_time_in_sidebar.textContent = data.time;
         };
 
         chatSocket.onclose = function(e) {
@@ -418,7 +430,6 @@
 
             const targetDiv = document.getElementById(`chat-${data.from_chat}`);
             if (targetDiv) {
-                // Проверяем наличие класса 'user-chats-list-notread'
                 if (!targetDiv.querySelector('.user-chats-list-notread')) {
                     const newDiv = document.createElement('div');
                     newDiv.className = 'user-chats-list-notread';

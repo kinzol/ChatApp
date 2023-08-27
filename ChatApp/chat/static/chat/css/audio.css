@@ -1,0 +1,15 @@
+.mate-audio::-webkit-media-controls-panel {
+    background-color: #A9A49E;
+}
+
+.my-audio::-webkit-media-controls-panel {
+    background-color: #B9B9B8;
+
+}
+
+
+audio {
+    filter: invert(100%);
+    border: none !important;
+    outline: none !important;
+}

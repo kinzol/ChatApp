@@ -13,6 +13,7 @@
             {% else %}
                 <div class="search-results-info">No results found.</div>
             {% endif %}
+            <a href="{% url 'home' %}"><button class="settings-mobile-menu-button">Menu</button></a>
             {% for profile in search_result %}
             <a href="{% url 'user_profile' username=profile.username%}">
             <div class="search-result-profile">

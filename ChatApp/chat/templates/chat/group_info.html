@@ -1,0 +1,199 @@
+
+{% extends 'chat/base.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'chat/css/group_style.css' %}" type="text/css">
+{% endblock %}
+
+{% block content %}
+<div class="chat">
+<div class="group">
+    <div class="group-info">
+        <a href="{% url 'home' %}"><button class="group-mobile-menu-button">
+            <img class='back-img' src="{% static 'chat/svg/back-gray.svg' %}">
+        </button></a>
+        Group
+    </div>
+    <div class="group-container">
+        <form method = "post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class='group-avatar'><img class="group-avatar-img" src="{{ group.avatar.url }}"></div>
+        <div class="group-avatar-edit">Choose new avatar: <input type="file" name="{{ form.avatar.name }}" id="{{ form.avatar.id_for_label }}" accept="image/*"
+            accept=".jpg, .jpeg, .png"></div>
+        <div class="group-username">{{group.name}}</div>
+        <div class="group-username-edit">{{ form.name }}</div>
+        <div class="group-create-time">Date of creation: {{group.time_create|date:'d F Y'}}</div>
+        <div class="group-bio">{{group.bio}}</div>
+        <div class="group-bio-edit">{{ form.bio }}</div>
+        <div class="show-submit"><button type="submit" class="submit">Save</button></div>
+        </form>
+        {% if request.user == group.root %}
+        <button class="edit-btn">Edit</button>
+        {% endif %}
+        <div class="group-members">
+            {% for user in group_users %}
+            <div class="group-member-user">
+                <div>
+                {{user.username}}
+                {% if user.profile.status_online %}
+                <div class="group-last-online-true" title="online">
+                    Online
+                </div>
+                {% else %}
+                <div class="group-last-online" title="{{user.profile.last_online}}">
+                    Last seen: {{user.profile.last_online|date:'d F, H:i'}}
+                </div>
+                {% endif %}
+                {% if group.root == user %}
+                    <div class="group-member-user-root">root</div>
+                {% endif %}
+                {% if user in group_admins %}
+                    <div class="group-member-user-admin">admin</div>
+                {% endif %}
+            </div>
+                {% if group.root == request.user or request.user in group_admins %}
+                {% if group.root != user %}
+                <div class="group-member-user-buttons">
+                    {% if request.user == group.root %}
+                    {% if user in group_admins %}
+                        <a class='group-member-user-buttons-admin-remove' 
+                        href="{% url 'group_remove_admin' user=user.id from_group=room_name %}">Remove admin</a>
+                    {% else %}
+                        <a class='group-member-user-buttons-admin-add' 
+                        href="{% url 'group_give_admin' user=user.id from_group=room_name %}">Add admin</a>
+                    {% endif %}
+                    {% endif %}
+                    {% if group.root == request.user or not user in group_admins %}
+                    <a class='group-member-user-buttons-kick' 
+                    href="{% url 'group_kick' user=user.id from_group=room_name %}">Kick user</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% if group.root == request.user or request.user in group_admins %}
+            <a class="group-member-user-buttons-add"
+            href="{% url 'group_add' from_group=room_name %}">Add user</a>
+            {% endif %}
+            {% if group.root == request.user %}
+            {% if group_users|length == 1 %}
+            <a class='group-member-user-buttons-leave' 
+            href="{% url 'group_kick' user=request.user.id from_group=room_name %}">Leave</a>
+            {% else %}
+            <a class='group-member-user-buttons-leave' style="background-color: #636363;">Kick all for Leave</a>
+            {% endif %}
+            {% endif %}
+            {% if group.root != request.user %}
+            <a class='group-member-user-buttons-leave' 
+            href="{% url 'group_kick' user=request.user.id from_group=room_name %}">Leave</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+
+    document.querySelector('.edit-btn').onclick = function(e) {
+        var element = document.querySelector('.group-username-edit');
+        element.style.display = 'block';
+        var element = document.querySelector('.edit-btn');
+        element.style.display = 'none';
+        var element = document.querySelector('.show-submit');
+        element.style.display = 'block';
+        var element = document.querySelector('.group-bio-edit');
+        element.style.display = 'block';
+        var element = document.querySelector('.group-username');
+        element.style.display = 'none';
+        var element = document.querySelector('.group-bio');
+        element.style.display = 'none';
+        var element = document.querySelector('.group-avatar-edit');
+        element.style.display = 'block';
+    };
+
+    document.querySelector('#users-chats-search-input').focus();
+    document.querySelector('#users-chats-search-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {  // enter, return
+            document.querySelector('#users-chats-search-submit').click();
+        }
+    };
+
+    document.querySelector('#users-chats-search-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#users-chats-search-input');
+        const message = messageInputDom.value;
+        if (message != "") {
+        window.location.href = decodeURIComponent(`/search/${message}`);
+        }
+    };
+
+    const generalSocket = new WebSocket(`ws://${window.location.host}/ws/general/`);
+
+    generalSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            if (data.hasOwnProperty('status_online')) {
+
+                if (data.status_online == true) {
+                    var divavatar = document.querySelector(`#avatar-${data.from_user}`);
+                    if (divavatar) {
+                        var statusElement = divavatar.querySelector('.user-chats-list-avatar-status-offline');
+                        statusElement.classList = ('user-chats-list-avatar-status-online');
+                        statusElement.title = 'online'
+                    }
+                } else {
+                    var divavatar = document.querySelector(`#avatar-${data.from_user}`);
+                    if (divavatar) {
+                        var statusElement = divavatar.querySelector('.user-chats-list-avatar-status-online');
+                        statusElement.classList = ('user-chats-list-avatar-status-offline');
+                        statusElement.title = null
+                    }
+                }
+            }
+            
+            if ('{{request.user.id}}' == data.to_user) {
+                var myAudio = new Audio('{% static "chat\sounds\get_message.mp3" %}');
+                myAudio.play();
+            }
+
+            var change_message_in_sidebar = document.getElementById(`message-${data.from_chat}`);
+            if (change_message_in_sidebar) {
+                change_message_in_sidebar.textContent = 'New message!';
+            }
+            var change_time_in_sidebar = document.getElementById(`time-${data.from_chat}`);
+            if (change_time_in_sidebar) {
+                change_time_in_sidebar.title = data.time
+                change_time_in_sidebar.textContent = data.time;
+            }
+
+            const targetDiv = document.getElementById(`chat-${data.from_chat}`);
+            if (targetDiv) {
+                // Проверяем наличие класса 'user-chats-list-notread'
+                if (!targetDiv.querySelector('.user-chats-list-notread')) {
+                    const newDiv = document.createElement('div');
+                    newDiv.className = 'user-chats-list-notread';
+                    newDiv.textContent = '1'
+                    targetDiv.appendChild(newDiv);
+                } else {
+                    const existingDiv = targetDiv.querySelector('.user-chats-list-notread');
+                    const content = existingDiv.textContent;
+                    const currentValue = parseInt(content, 10);
+                    if (!isNaN(currentValue)) {
+                        const newValue = currentValue + 1;
+                        if (newValue < 100) {
+                            existingDiv.textContent = newValue.toString();
+                        } else {
+                            existingDiv.textContent = '99';
+                        }
+                    }
+                }
+            }
+        }
+        generalSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+</script>
+
+{% endblock %}

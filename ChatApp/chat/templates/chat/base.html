@@ -23,24 +23,52 @@
                     <button id="users-chats-search-submit"><img class="users-chats-search-button" src="{% static 'chat/svg/send.svg' %}"></button>
                 </div>
             </div>
+            <div class="users-chats-search-add-group">
+                <a class="users-chats-search-add-a" title="Create Group" href="{% url 'create_group' %}">
+                    <img class='users-chats-search-add-img' src="{% static 'chat/svg/add.svg' %}">
+                </a>
+            </div>
         </div>
         <div class="users-chats-list">
             {% for chat in chats %}
-            {% if chat.0.pk == room_name %}
-                <a href="/chat/{{chat.0.pk}}"><div class="users-chats-list-user-selected">
+            {% if chat.chat.pk == room_name %}
+                {% if chat.type == 'chat' %}
+                    {% if chat.type == type_page %}
+                    <a href="/chat/{{chat.chat.pk}}"><div class="users-chats-list-user-selected">
+                    {% else %}
+                    <a href="/chat/{{chat.chat.pk}}"><div id="chat-{{chat.chat.pk}}" class="users-chats-list-user">
+                    {% endif %}
+                {% else %}
+                {% if chat.type == type_page %}
+                    <a href="/group/{{chat.chat.pk}}"><div class="users-chats-list-user-selected">
+                {% else %}
+                    <a href="/group/{{chat.chat.pk}}"><div id="group-{{chat.chat.pk}}" class="users-chats-list-user">
+                {% endif %}
+                {% endif %}
+
             {% else %}
-                <a href="/chat/{{chat.0.pk}}"><div id="chat-{{chat.0.pk}}" class="users-chats-list-user">
-                {% if chat.2 > 0 and chat.2 < 100 %}
-                    <div class="user-chats-list-notread">{{chat.2}}</div>
-                {% elif chat.2 >= 100 %}
+
+                {% if chat.type == 'chat' %}
+                    <a href="/chat/{{chat.chat.pk}}"><div id="chat-{{chat.chat.pk}}" class="users-chats-list-user">
+                {% else %}
+                    <a href="/group/{{chat.chat.pk}}"><div id="group-{{chat.chat.pk}}" class="users-chats-list-user">
+                {% endif %}
+            
+                {% if chat.count_read > 0 and chat.count_read < 100 %}
+                    <div class="user-chats-list-notread">{{chat.count_read}}</div>
+                {% elif chat.count_read >= 100 %}
                     <div class="user-chats-list-notread">99</div>
                 {% endif %}
             {% endif %}
-            <div id='avatar-{{ chat.4.pk }}' style="display: flex; position: relative;">
+            <div id='avatar-{{ chat.mate.pk }}' style="display: flex; position: relative;">
                 <div class='user-chats-list-avatar'>
-                    <img class="user-chats-list-avatar-img" src="{{ chat.4.profile.avatar.url }}">
+                    {% if chat.type == 'chat' %}
+                        <img class="user-chats-list-avatar-img" src="{{ chat.mate.profile.avatar.url }}">
+                    {% else %}
+                        <img class="user-chats-list-avatar-img" src="{{ chat.chat.avatar.url }}">
+                    {% endif %}
                 </div>
-                {% if chat.4.profile.status_online %}
+                {% if chat.mate.profile.status_online %}
                     <div class="user-chats-list-avatar-status-online" title="online"></div>
                 {% else %}
                     <div class="user-chats-list-avatar-status-offline"></div>
@@ -48,15 +76,33 @@
 
 
                 <div style="display: grid;">
-                    <h1>{{chat.4}}</h1>
-                    {% if chat.1.content|length > 20%}
-                        <h3 id="message-{{chat.0.pk}}" class="users-chats-list-last-message">{{chat.1.content|slice:":17" }}...</h3>
+                    {% if chat.type == 'chat' %}
+                        {% if chat.mate.username|length > 9 %}
+                        <div class="long-name">{{chat.mate}}</div>
+                        {% else %}
+                        <h1>{{chat.mate}}</h1>
+                        {% endif %}
                     {% else %}
-                        <h3 id="message-{{chat.0.pk}}" class="users-chats-list-last-message">{{chat.1.content|slice:":20" }}</h3>
+                        {% if chat.chat.name|length > 9 %}
+                            <div class="long-name">{{chat.chat.name}}</div>
+                        {% else %}
+                            <h1>{{chat.chat.name}}</h1>
+                        {% endif %}
                     {% endif %}
+                    
+                    {% if chat.message.message_type == 'text' %}
+                        {% if chat.message.content|length > 20%}
+                            <h3 id="message-{{chat.chat.pk}}" class="users-chats-list-last-message">{{chat.message.content|slice:":17" }}...</h3>
+                        {% else %}
+                            <h3 id="message-{{chat.chat.pk}}" class="users-chats-list-last-message">{{chat.message.content|slice:":20" }}</h3>
+                        {% endif %}
+                    {% elif chat.message.message_type == 'audio' %}
+                        <h3 id="message-{{chat.chat.pk}}" class="users-chats-list-last-message">Voice message</h3>    
+                    {% endif %}
+
                 </div>
                 <div style="display: flex; margin-inline-start: auto;">
-                    <h3 id="time-{{chat.0.pk}}" title="{{chat.1.time_create}}" class="users-chats-list-last-message">{{chat.1.time_create|date:"G:i"}}</h3>
+                    <h3 id="time-{{chat.chat.pk}}" title="{{chat.message.time_create}}" class="users-chats-list-last-message">{{chat.message.time_create|date:"G:i"}}</h3>
                 </div>
             </div>
             </div></a>
@@ -68,7 +114,11 @@
             </div>
             <div style="margin-left: 5px;">
                 <h4 style="color: #ceced8;">Your profile</h4>
-                <h3>{{request.user.username}}</h3>
+                {% if request.user.username|length > 9 %}
+                    <div class="size-myname-long">{{request.user.username}}</div>
+                {% else %}
+                    <div class="size-myname">{{request.user.username}}</div>
+                {% endif %}
             </div>
             <a href='{% url "settings" %}' class="settings-button">Settings</a>
         </div>

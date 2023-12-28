@@ -82,6 +82,23 @@ a {
     font-weight: 500;
 }
 
+.message-info {
+    display: grid;
+    margin-left: auto;
+}
+
+.message-dots {
+    height: 15px;
+    display: flex;
+}
+
+.message-dots-img {
+    display: none;
+    width: 20px;
+    margin-bottom: auto;
+    margin-left: auto;
+}
+
 /* chat-user */
 .users-chats-list-user {
     position: relative;
@@ -239,6 +256,9 @@ a {
     margin: 0;
     color: #b8b5b5;
     font-weight: 400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* other-chat-chats */
@@ -606,6 +626,12 @@ audio::-webkit-media-controls-time-remaining-display {
 
 .size-myname-long {
     font-size: 20px;
+}
+
+.users-name-style {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 @media (max-width: 1250px) {

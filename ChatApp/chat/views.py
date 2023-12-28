@@ -2,19 +2,14 @@ from django.contrib.auth import logout, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.db.models import Q
-from django.http import HttpResponseBadRequest
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.utils.decorators import method_decorator
-from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView, ListView, CreateView
 from django.views.generic.edit import FormMixin, UpdateView
 
-from .models import *
 from .forms import *
-
 from .utils import *
+
 
 class MainMenu(DataMixin, LoginRequiredMixin, TemplateView):
     template_name = 'chat/index.html'
@@ -26,18 +21,18 @@ class MainMenu(DataMixin, LoginRequiredMixin, TemplateView):
         return dict(list(context.items()) + list(c_def.items()))
 
 
-
 class ChatPage(DataMixin, LoginRequiredMixin, TemplateView):
     template_name = 'chat/chatPage.html'
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
         user, messages = self.get_messages_info(kwargs['room_name'])
-
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(room_name=kwargs['room_name'], title=f"Chat with {user}", mate_user=user, messages=messages, type_page='chat')
-        return dict(list(context.items()) + list(c_def.items()))
 
+        c_def = self.get_user_context(room_name=kwargs['room_name'], title=f"Chat with {user}",
+                                      mate_user=user, messages=messages, type_page='chat')
+
+        return dict(list(context.items()) + list(c_def.items()))
 
     def get_messages_info(self, room_name):
         chat = Chat.objects.get(pk=room_name)
@@ -56,10 +51,12 @@ class GroupPage(DataMixin, LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         group_name, messages, group_users = self.get_messages_info(kwargs['room_name'])
-
         context = super().get_context_data(**kwargs)
+
         c_def = self.get_user_context(room_name=kwargs['room_name'], title=f"Group {group_name}",
-                                      group_name=group_name, messages=messages, group_users=group_users, type_page='group')
+                                      group_name=group_name, messages=messages, group_users=group_users,
+                                      type_page='group')
+
         return dict(list(context.items()) + list(c_def.items()))
 
     def get_messages_info(self, room_name):
@@ -78,14 +75,15 @@ class SearchUsers(DataMixin, LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         result = self.get_search_result(self.kwargs['search_name'])
-
         context = super().get_context_data(**kwargs)
+
         c_def = self.get_user_context(title=f"Search result: {self.kwargs['search_name']}", search_result=result)
         return dict(list(context.items()) + list(c_def.items()))
 
     def get_search_result(self, search_name):
         result = User.objects.filter(Q(username__icontains=search_name) & ~Q(pk=self.request.user.id))
         return result
+
 
 @login_required(login_url='login')
 def new_chat(request, id_user):
@@ -103,6 +101,13 @@ def new_chat(request, id_user):
         else:
             return redirect(f'/chat/{chats[0].id}')
     return redirect('home')
+
+
+def delete_message(request, message_id, from_chat):
+    message = Messages.objects.get(pk=message_id)
+    if message.user == request.user:
+        message.delete()
+    return redirect('chat-page', room_name=from_chat)
 
 
 class Settings(DataMixin, LoginRequiredMixin, UpdateView):
@@ -133,7 +138,6 @@ class UserProfile(DataMixin, LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         c_def = self.get_user_context(title=f"Profile: {self.kwargs['username']}")
         return dict(list(context.items()) + list(c_def.items()))
-
 
     def get_queryset(self):
         queryset = User.objects.get(username=self.kwargs['username'])
@@ -195,9 +199,11 @@ class GroupInfo(LoginRequiredMixin, DataMixin, TemplateView, FormMixin):
 
     def get_context_data(self, **kwargs):
         group, group_users, group_admins = self.get_group_info(kwargs['room_name'])
-
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(room_name=kwargs['room_name'], title=f"Group information {group.name}", group=group, group_users=group_users, group_admins=group_admins)
+
+        c_def = self.get_user_context(room_name=kwargs['room_name'], title=f"Group information {group.name}",
+                                      group=group, group_users=group_users, group_admins=group_admins)
+
         return dict(list(context.items()) + list(c_def.items()))
 
     def get_group_info(self, room_name):
@@ -217,10 +223,11 @@ def group_give_admin(request, user, from_group):
     group = Group.objects.get(pk=from_group)
     group_admin = group.admins.all()
     selected_user = User.objects.get(pk=user)
-    if request.user == group.root and not selected_user in group_admin:
+    if request.user == group.root and selected_user not in group_admin:
         group.admins.add(selected_user)
         group.save()
     return redirect("group-info", room_name=from_group)
+
 
 @login_required(login_url='login')
 def group_remove_admin(request, user, from_group):
@@ -232,13 +239,19 @@ def group_remove_admin(request, user, from_group):
         group.save()
     return redirect("group-info", room_name=from_group)
 
+
 @login_required(login_url='login')
 def group_kick(request, user, from_group):
     group = Group.objects.get(pk=from_group)
     group_admin = group.admins.all()
     selected_user = User.objects.get(pk=user)
 
-    if request.user != selected_user and request.user == group.root or request.user in group_admin and not selected_user in group_admin:
+    is_not_selected_user = request.user != selected_user
+    is_root_user = request.user == group.root
+    is_user_admin = request.user in group_admin
+    is_selected_user_not_admin = selected_user not in group_admin
+
+    if is_not_selected_user and (is_root_user or (is_user_admin and is_selected_user_not_admin)):
         group.participants.remove(selected_user)
         if selected_user in group_admin:
             group.admins.remove(selected_user)
@@ -296,7 +309,7 @@ class GroupAdd(LoginRequiredMixin, DataMixin, TemplateView, FormMixin):
         return redirect('group-info', room_name=self.kwargs['from_group'])
 
 
-#auth
+# auth
 class LoginUser(LoginView):
     form_class = LoginUserForm
     template_name = "chat/login.html"
@@ -308,6 +321,7 @@ class LoginUser(LoginView):
 
     def get_success_url(self):
         return reverse_lazy('home')
+
 
 class RegisterUser(CreateView):
     form_class = RegisterUserForm
@@ -328,4 +342,3 @@ class RegisterUser(CreateView):
 def logout_user(request):
     logout(request)
     return redirect("login")
-

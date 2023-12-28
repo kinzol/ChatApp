@@ -31,10 +31,17 @@
 
             {% if message.message_type == 'text' %}
                 {% if message.user.id == request.user.id %}
-                <div class="my-message">
+                <div id='message-{{message.id}}' class="my-message"
+                onmouseover="showDots('{{message.id}}')" onmouseout="hideDots('{{message.id}}')">
                     <div style="display:flex">
                         <!-- <div class="message-name">{{message.user}}</div> -->
                         <div class="message-content">{{message.content}}</div>
+                        <div class='message-info'>
+                        <a href="{% url 'delete-message' message_id=message.id from_chat=room_name %}">
+                            <div class="message-dots">
+                                    <img id='dots-{{message.id}}' class="message-dots-img" src="{% static 'chat/svg/trash.svg' %}">
+                            </div>
+                        </a>
                         <div class="message-time" title="{{message.time_create}}">{{message.time_create|date:"G:i"}}
                             <div class="message-status">
                                 {% if message.read == 1 %}
@@ -45,9 +52,11 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
                 {% else %}
-                    <div class="mate-message">
+                    <div id='message-{{message.id}}' class="mate-message" 
+                    onmouseover="showDots('{{message.id}}')" onmouseout="hideDots('{{message.id}}')">
                         <div style="display:flex">
                         <!-- <div class="message-name">{{message.user}}</div> -->
                             <div class="message-content">{{message.content}}</div>
@@ -60,7 +69,8 @@
 
             {% if message.message_type == 'audio' %}
             {% if message.user.id == request.user.id %}
-            <div class="my-message">
+            <div id='message-{{message.id}}' class="my-message"
+            onmouseover="showDots('{{message.id}}')" onmouseout="hideDots('{{message.id}}')">
                 <div style="display:flex">
                     <!-- <div class="message-name">{{message.user}}</div> -->
                     <div class="message-content">
@@ -69,6 +79,10 @@
                         </audio>
                     </div>
 
+                    <div class='message-info'>
+                    <a href="{% url 'delete-message' message_id=message.id from_chat=room_name %}">
+                    <div class="message-dots"><img id='dots-{{message.id}}' class="message-dots-img" src="{% static 'chat/svg/trash.svg' %}"></div>
+                    </a>
                     <div class="message-time" title="{{message.time_create}}">{{message.time_create|date:"G:i"}}
                         <div class="message-status">
                             {% if message.read == 1 %}
@@ -79,9 +93,11 @@
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
             {% else %}
-                <div class="mate-message">
+                <div id='message-{{message.id}}' class="mate-message"
+                onmouseover="showDots('{{message.id}}')" onmouseout="hideDots('{{message.id}}')">
                     <div style="display:flex">
                     <!-- <div class="message-name">{{message.user}}</div> -->
                         <div class="message-content">
@@ -130,6 +146,19 @@
         const generalSocket = new WebSocket(`ws://${window.location.host}/ws/general/`);
 
 
+        function showDots(id) {
+            ditsDiv = document.getElementById(`dots-${id}`);
+            if (ditsDiv) {
+                ditsDiv.style.display = "block";
+            }
+        }
+
+        function hideDots(id) {
+            ditsDiv = document.getElementById(`dots-${id}`);
+            if (ditsDiv) {
+                ditsDiv.style.display = "none";
+            }
+        }
 
 
         document.addEventListener("DOMContentLoaded", function() {

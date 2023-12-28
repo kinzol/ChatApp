@@ -77,17 +77,9 @@
 
                 <div style="display: grid;">
                     {% if chat.type == 'chat' %}
-                        {% if chat.mate.username|length > 9 %}
-                        <div class="long-name">{{chat.mate}}</div>
-                        {% else %}
-                        <h1>{{chat.mate}}</h1>
-                        {% endif %}
+                        <h1 class="users-name-style">{{chat.mate}}</h1>
                     {% else %}
-                        {% if chat.chat.name|length > 9 %}
-                            <div class="long-name">{{chat.chat.name}}</div>
-                        {% else %}
-                            <h1>{{chat.chat.name}}</h1>
-                        {% endif %}
+                        <h1 class="users-name-style">{{chat.chat.name}}</h1>
                     {% endif %}
                     
                     {% if chat.message.message_type == 'text' %}

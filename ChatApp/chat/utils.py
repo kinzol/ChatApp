@@ -1,9 +1,8 @@
-from datetime import datetime
-
 from django.db.models import Q
 from django.utils import timezone
 
 from .models import *
+
 
 class DataMixin:
 
@@ -25,7 +24,6 @@ class DataMixin:
                     user_me, user_mate = chat_users[0], chat_users[1]
                 else:
                     user_me, user_mate = chat_users[1], chat_users[0]
-
 
                 list_chats_and_groups.append({'chat': chat, 'message': message, 'count_read': len(count_read),
                                               'mate': user_mate, 'me': user_me, 'type': 'chat'})

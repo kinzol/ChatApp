@@ -1,5 +1,4 @@
 import os
-from urllib.parse import urljoin
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -7,13 +6,14 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-# Create your models here.
 class Chat(models.Model):
     participants = models.ManyToManyField(User)
     time_create = models.DateTimeField(auto_now_add=True)
 
+
 def groups_directory_path(instance, filename):
     return os.path.join('uploads', f'groups', 'group_avatar.jpg')
+
 
 class Group(models.Model):
     root = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
@@ -32,6 +32,7 @@ class Group(models.Model):
                 old_instance.avatar.delete(save=False)
         super(Group, self).save(*args, **kwargs)
 
+
 class Messages(models.Model):
     message_type = models.TextField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
@@ -39,6 +40,7 @@ class Messages(models.Model):
     time_create = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
     chat_id = models.IntegerField()
+
 
 class GroupMessages(models.Model):
     message_type = models.TextField(max_length=255)
@@ -48,9 +50,11 @@ class GroupMessages(models.Model):
     read = models.BooleanField(default=False)
     chat_id = models.IntegerField()
 
+
 def user_directory_path(instance, filename):
     user_id = instance.user.id
     return os.path.join('uploads', f'user_{user_id}', 'avatar.jpg')
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -66,10 +70,12 @@ class Profile(models.Model):
                 old_instance.avatar.delete(save=False)
         super(Profile, self).save(*args, **kwargs)
 
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
+
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
